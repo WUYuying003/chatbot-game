@@ -4,7 +4,7 @@ import json
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="AI聊天机器人 + 俄罗斯方块", 
+    page_title="AI Chatbot + Tetris Game", 
     page_icon="🎮", 
     layout="wide"
 )
@@ -66,21 +66,21 @@ tetris_html = """
 </head>
 <body>
     <div class="game-container">
-        <h2>🎮 俄罗斯方块</h2>
+        <h2>🎮 Tetris Game</h2>
         <div class="info">
-            <span>分数: <span id="score">0</span></span> | 
-            <span>等级: <span id="level">1</span></span> | 
-            <span>消行: <span id="lines">0</span></span>
+            <span>Score: <span id="score">0</span></span> | 
+            <span>Level: <span id="level">1</span></span> | 
+            <span>Lines: <span id="lines">0</span></span>
         </div>
         <div style="position: relative;">
             <canvas id="tetris" width="300" height="600"></canvas>
-            <div id="pauseOverlay" class="pause-overlay">游戏已暂停<br>按P继续</div>
+            <div id="pauseOverlay" class="pause-overlay">Game Paused<br>Press P to Continue</div>
         </div>
         <div class="controls">
-            <div>操作: ←→移动 | ↑旋转 | ↓加速 | 空格硬降 | P暂停</div>
-            <button onclick="newGame()">新游戏</button>
-            <button onclick="togglePause()">暂停/继续</button>
-            <button onclick="showHistory()">查看历史</button>
+            <div>Controls: ←→ Move | ↑ Rotate | ↓ Speed Up | Space Hard Drop | P Pause</div>
+            <button onclick="newGame()">New Game</button>
+            <button onclick="togglePause()">Pause/Resume</button>
+            <button onclick="showHistory()">View History</button>
         </div>
     </div>
 
@@ -272,13 +272,13 @@ tetris_html = """
         function showHistory() {
             const history = JSON.parse(localStorage.getItem('tetrisHistory') || '[]');
             if (history.length === 0) {
-                alert('暂无游戏历史记录');
+                alert('No game history available');
                 return;
             }
             
-            let historyText = '🎮 游戏历史记录:\\n\\n';
+            let historyText = '🎮 Game History:\\n\\n';
             history.slice(-5).reverse().forEach((game, index) => {
-                historyText += `${index + 1}. ${game.timestamp}\\n   分数: ${game.score.toLocaleString()} | 等级: ${game.level} | 消行: ${game.lines} | 时长: ${game.duration}秒\\n\\n`;
+                historyText += `${index + 1}. ${game.timestamp}\\n   Score: ${game.score.toLocaleString()} | Level: ${game.level} | Lines: ${game.lines} | Duration: ${game.duration}s\\n\\n`;
             });
             
             alert(historyText);
@@ -300,7 +300,7 @@ tetris_html = """
                         if (!isValidMove(currentPiece)) {
                             gameOver = true;
                             saveGameData(); // 保存游戏数据
-                            alert('游戏结束! 分数: ' + score + '\\n游戏时长: ' + Math.floor((Date.now() - gameStartTime) / 1000) + '秒');
+                            alert('Game Over! Score: ' + score + '\\nGame Duration: ' + Math.floor((Date.now() - gameStartTime) / 1000) + ' seconds');
                         }
                     }
                     dropCounter = 0;
@@ -361,37 +361,37 @@ tetris_html = """
 </html>
 """
 
-# 页面布局
-st.title("🎮 AI聊天机器人 + 俄罗斯方块")
-st.caption("🚀 边聊天边游戏的双重体验")
+# Page layout
+st.title("🎮 AI Chatbot + Tetris Game")
+st.caption("🚀 Dual experience of chatting and gaming")
 
-# 创建两列布局
+# Create two-column layout
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.header("💬 AI聊天助手")
+    st.header("💬 AI Assistant")
     
-    # 初始化游戏历史数据
+    # Initialize game history data
     if "game_history" not in st.session_state:
         st.session_state["game_history"] = []
     
-    # 聊天机器人逻辑
+    # Chatbot logic
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "assistant", "content": "你好！我是AI游戏助手。我可以：\n\n🎮 记录你的俄罗斯方块游戏数据\n📊 分析你的游戏表现\n💬 回答任何问题\n\n开始游戏吧！我会自动记录你的成绩。"}]
+        st.session_state["messages"] = [{"role": "assistant", "content": "Hello! I'm an AI Gaming Assistant. I can:\n\n🎮 Record your Tetris game data\n📊 Analyze your gaming performance\n💬 Answer any questions\n\nStart playing! I'll automatically record your scores."}]
 
-    # 显示聊天历史
+    # Display chat history
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # 用户输入
-    if prompt := st.chat_input("请输入你的问题..."):
+    # User input
+    if prompt := st.chat_input("Please enter your question..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
         
-        # 检查是否是游戏数据相关的查询
-        game_keywords = ["游戏", "分数", "历史", "记录", "统计", "表现", "成绩", "俄罗斯方块"]
-        if any(keyword in prompt for keyword in game_keywords) and st.session_state.game_history:
-            # 生成游戏统计报告
+        # Check if query is game data related
+        game_keywords = ["game", "score", "history", "record", "statistics", "performance", "tetris", "stats"]
+        if any(keyword.lower() in prompt.lower() for keyword in game_keywords) and st.session_state.game_history:
+            # Generate game statistics report
             total_games = len(st.session_state.game_history)
             if total_games > 0:
                 avg_score = sum(game['score'] for game in st.session_state.game_history) / total_games
@@ -399,32 +399,32 @@ with col1:
                 max_level = max(game['level'] for game in st.session_state.game_history)
                 total_lines = sum(game['lines'] for game in st.session_state.game_history)
                 
-                stats_msg = f"""📊 **你的俄罗斯方块统计数据：**
+                stats_msg = f"""📊 **Your Tetris Game Statistics:**
 
-🎮 **总游戏次数：** {total_games} 场
-🏆 **最高分数：** {max_score:,} 分
-📈 **平均分数：** {avg_score:,.0f} 分  
-⭐ **最高等级：** {max_level} 级
-📏 **总消除行数：** {total_lines} 行
+🎮 **Total Games Played:** {total_games} games
+🏆 **Highest Score:** {max_score:,} points
+📈 **Average Score:** {avg_score:,.0f} points  
+⭐ **Highest Level Reached:** {max_level}
+📏 **Total Lines Cleared:** {total_lines} lines
 
-📋 **最近5场游戏记录：**"""
+📋 **Recent 5 Games:**"""
                 
-                # 显示最近5场游戏
+                # Show recent 5 games
                 recent_games = st.session_state.game_history[-5:]
                 for i, game in enumerate(reversed(recent_games), 1):
-                    stats_msg += f"\n{i}. {game['timestamp']} - 分数: {game['score']:,} | 等级: {game['level']} | 消行: {game['lines']} | 时长: {game['duration']}秒"
+                    stats_msg += f"\n{i}. {game['timestamp']} - Score: {game['score']:,} | Level: {game['level']} | Lines: {game['lines']} | Duration: {game['duration']}s"
                 
                 st.chat_message("assistant").write(stats_msg)
                 st.session_state.messages.append({"role": "assistant", "content": stats_msg})
         else:
             try:
-                # 使用直接HTTP API调用Ollama
+                # Use direct HTTP API to call Ollama
                 url = "http://localhost:11434/api/chat"
                 
-                # 如果有游戏历史，添加到上下文中
+                # Add game history to context if available
                 context_message = ""
                 if st.session_state.game_history:
-                    recent_stats = f"用户最近的游戏统计：总共玩了{len(st.session_state.game_history)}场，最高分{max(game['score'] for game in st.session_state.game_history)}分。"
+                    recent_stats = f"User's recent gaming stats: Played {len(st.session_state.game_history)} games total, highest score {max(game['score'] for game in st.session_state.game_history)} points."
                     context_message = recent_stats
                 
                 messages_with_context = st.session_state.messages.copy()
@@ -441,60 +441,60 @@ with col1:
                 
                 if response.status_code == 200:
                     result = response.json()
-                    msg = result.get('message', {}).get('content', '抱歉，没有收到有效回复。')
+                    msg = result.get('message', {}).get('content', 'Sorry, no valid response received.')
                     st.chat_message("assistant").write(msg)
                     st.session_state.messages.append({"role": "assistant", "content": msg})
                 else:
-                    error_msg = f"❌ API调用失败 (状态码: {response.status_code})\n\n请确保Ollama正在运行：\n1. 在终端运行: `ollama serve`\n2. 确认模型已安装: `ollama pull llama3.2:1b`"
+                    error_msg = f"❌ API call failed (Status code: {response.status_code})\n\nPlease ensure Ollama is running:\n1. Run in terminal: `ollama serve`\n2. Confirm model is installed: `ollama pull llama3.2:1b`"
                     st.chat_message("assistant").write(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg})
                     
             except requests.exceptions.ConnectionError:
-                error_msg = "❌ 无法连接到Ollama服务\n\n请检查：\n1. Ollama是否正在运行？运行命令: `ollama serve`\n2. 服务是否在端口11434运行？"
+                error_msg = "❌ Cannot connect to Ollama service\n\nPlease check:\n1. Is Ollama running? Run command: `ollama serve`\n2. Is the service running on port 11434?"
                 st.chat_message("assistant").write(error_msg)
                 st.session_state.messages.append({"role": "assistant", "content": error_msg})
             except requests.exceptions.Timeout:
-                error_msg = "❌ 请求超时\n\n模型可能正在加载中，请稍后再试。"
+                error_msg = "❌ Request timeout\n\nThe model might be loading, please try again later."
                 st.chat_message("assistant").write(error_msg)
                 st.session_state.messages.append({"role": "assistant", "content": error_msg})
             except Exception as e:
-                error_msg = f"❌ 发生错误: {str(e)}\n\n请检查Ollama服务状态。"
+                error_msg = f"❌ Error occurred: {str(e)}\n\nPlease check Ollama service status."
                 st.chat_message("assistant").write(error_msg)
                 st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 with col2:
-    st.header("🎮 俄罗斯方块")
+    st.header("🎮 Tetris Game")
     
-    # 添加游戏历史侧边栏
+    # Add game history sidebar
     if st.session_state.game_history:
-        with st.expander("📊 游戏历史记录", expanded=False):
-            st.write(f"**总游戏场数:** {len(st.session_state.game_history)}")
+        with st.expander("📊 Game History", expanded=False):
+            st.write(f"**Total Games Played:** {len(st.session_state.game_history)}")
             if len(st.session_state.game_history) > 0:
                 max_score = max(game['score'] for game in st.session_state.game_history)
                 avg_score = sum(game['score'] for game in st.session_state.game_history) / len(st.session_state.game_history)
-                st.write(f"**最高分:** {max_score:,}")
-                st.write(f"**平均分:** {avg_score:.0f}")
+                st.write(f"**Highest Score:** {max_score:,}")
+                st.write(f"**Average Score:** {avg_score:.0f}")
                 
-                st.write("**最近游戏记录:**")
+                st.write("**Recent Games:**")
                 recent_games = st.session_state.game_history[-5:]
                 for game in reversed(recent_games):
-                    st.write(f"🕒 {game['timestamp']} - 分数: {game['score']:,} | 等级: {game['level']} | 消行: {game['lines']}")
+                    st.write(f"🕒 {game['timestamp']} - Score: {game['score']:,} | Level: {game['level']} | Lines: {game['lines']}")
     
-    # 嵌入俄罗斯方块游戏
+    # Embed Tetris game
     components.html(tetris_html, height=750)
 
-# 添加说明信息
+# Add instructions
 st.markdown("---")
 st.markdown("""
-### 🎯 使用说明：
-- **左侧聊天区域**：和AI助手进行对话，询问任何问题
-- **右侧游戏区域**：享受经典俄罗斯方块游戏
-- **游戏操作**：使用键盘方向键控制方块，空格键快速下降
-- **多任务体验**：可以边聊天边游戏，互不干扰！
+### 🎯 Usage Instructions:
+- **Left Chat Area**: Chat with AI assistant, ask any questions
+- **Right Game Area**: Enjoy the classic Tetris game
+- **Game Controls**: Use arrow keys to control blocks, spacebar for hard drop
+- **Multitasking**: Chat and play simultaneously without interference!
 
-### 🚀 特色功能：
-- 🤖 智能AI对话助手
-- 🎮 完整俄罗斯方块游戏
-- 📱 响应式设计，适配各种屏幕
-- ⚡ 实时游戏体验
+### 🚀 Key Features:
+- 🤖 Intelligent AI conversation assistant
+- 🎮 Complete Tetris game experience
+- 📱 Responsive design for all screen sizes
+- ⚡ Real-time gaming experience
 """)

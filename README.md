@@ -1,38 +1,68 @@
-# 🎮 AI聊天机器人 + 俄罗斯方块
+# 🎮 AI Chatbot + Tetris Game
 
-个人项目：集成AI聊天功能和俄罗斯方块游戏的网页应用
+Personal project: Web application integrating AI chat functionality with Tetris game
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
 ```bash
-# 安装依赖
+# Install dependencies
 pip install streamlit requests ollama pygame
 
-# 启动Ollama服务
+# Start Ollama service
 ollama serve
 ollama pull llama3.2:1b
 
-# 运行集成版应用
+# Run integrated application
 streamlit run week04/chatbot_with_tetris.py
 
-# 或运行独立版游戏
+# Or run standalone game
 python tetris_game.py
 ```
 
-## ✨ 功能特色
+## ✨ Features
 
-- 🤖 AI聊天助手（支持游戏数据分析）
-- 🎮 完整俄罗斯方块游戏（支持暂停）
-- 📊 自动游戏历史记录
-- 💬 智能统计查询
+- 🤖 AI Chat Assistant (supports game data analysis)
+- 🎮 Complete Tetris game (with pause function)
+- 📊 Automatic game history recording
+- 💬 Intelligent statistics queries
 
-## 🎯 操作说明
+## 🎯 Instructions
 
-### 游戏控制
-- `←→` 移动 | `↑` 旋转 | `↓` 加速 | `空格` 硬降 | `P` 暂停
+### Game Controls
+- `←→` Move | `↑` Rotate | `↓` Speed up | `Space` Hard drop | `P` Pause
 
-### AI助手
-询问游戏表现："我的游戏记录怎么样？"
+### AI Assistant
+Ask about game performance: "How are my game records?"
+
+## 📁 Project Structure
+
+```
+├── week04/
+│   ├── chatbot_with_tetris.py     # Main integrated application
+│   ├── simple_ollama_test_en.py   # Simple chatbot (English)
+│   ├── ollama_chatbot.py          # Basic chatbot
+│   └── requirements.txt           # Dependencies
+├── tetris_game.py                 # Standalone Tetris game (Pygame)
+├── requirements.txt               # Main dependencies
+└── README.md                      # Project documentation
+```
+
+## 🛠️ Technical Stack
+
+- **Frontend**: Streamlit + HTML5 Canvas
+- **Backend**: Python
+- **AI Model**: Ollama (llama3.2:1b)
+- **Game Engine**: HTML5 Canvas (web) + Pygame (standalone)
+- **Data Storage**: Browser LocalStorage
+
+## 🎨 Key Features
+
+1. **Dual-column layout**: Chat on left, game on right, no interference
+2. **Smart data analysis**: AI understands and analyzes your game performance
+3. **Pause function**: Supports pausing and resuming game anytime
+4. **History records**: Automatically saves and queryable game history
+5. **Responsive design**: Adapts to different screen sizes
 
 ---
-作者: WUYuying003
+Author: WUYuying003  
+Contact: 25056092g@connect.polyu.hk
