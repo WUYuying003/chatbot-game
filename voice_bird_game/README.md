@@ -1,6 +1,8 @@
 # 🐦 Voice-Controlled Flying Bird Game
 
-A real-time voice-controlled flying bird game inspired by the Chrome dinosaur game, built with Python, Pygame, and PyAudio.
+**Part of the Interactive Projects - Mini Games Club**
+
+A real-time voice-controlled flying bird game inspired by the Chrome dinosaur game, built with Python, Pygame, and PyAudio. This innovative game demonstrates advanced human-computer interaction through voice control.
 
 ## 🎮 Game Features
 
@@ -37,8 +39,8 @@ pyaudio>=0.2.14
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/WUYuying003/chatbot-game.git
-cd chatbot-game/voice_bird_game
+git clone https://github.com/WUYuying003/interactive-projects.git
+cd interactive-projects/voice_bird_game
 ```
 
 2. **Create virtual environment**
@@ -181,5 +183,15 @@ Feel free to submit issues and enhancement requests! This project demonstrates:
 - Human-computer interaction through voice
 
 ---
+
+**Repository**: https://github.com/WUYuying003/interactive-projects  
+**Mini Games Club**: Interactive Projects Collection  
+**Author**: WUYuying003  
+**Contact**: 25056092g@connect.polyu.hk
+
+### 🎮 More Games in Our Club
+- AI Chatbot + Tetris Game
+- Future gesture-controlled games
+- Upcoming multiplayer experiences
 
 **Enjoy playing and happy flying! 🎮🐦**
