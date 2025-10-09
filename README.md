@@ -37,8 +37,6 @@ python voice_bird_game.py
 ### 🤖 AI Chatbot + Tetris Game
 Secondary project showcasing AI integration with classic gaming
 
-### 🚀 Future Development
-Exploring gesture control, multiplayer features, and VR/AR integration
 
 ## 🚀 Quick Start
 
