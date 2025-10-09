@@ -6,6 +6,10 @@
 
 ## 🎮 Main Assignment: Voice-Controlled Flying Bird Game
 
+![Voice-Controlled Bird Game Demo](voice_controlled_bird_assignment/demo.gif)
+
+*🎤 Watch the bird respond to voice commands in real-time! High pitch = fly up, Low pitch = fly down*
+
 ### 📁 Assignment Folder: `voice_controlled_bird_assignment/`
 
 **Primary Project**: Advanced voice-controlled flying bird game demonstrating real-time audio processing and human-computer interaction.
@@ -24,7 +28,7 @@ pip install -r requirements.txt
 python voice_bird_game.py
 ```
 
-**🎬 Demo GIF**: See assignment folder for game demonstration video
+**🎬 Interactive Demo**: The GIF above shows real voice control in action - notice the audio indicators responding to voice input!
 
 ---
 
