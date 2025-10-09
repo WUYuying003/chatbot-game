@@ -1,17 +1,40 @@
-# 🎮 Interactive Projects - Mini Games Club
+# � Interactive Programming Course - Assignment Collection
 
-A collection of interactive games and applications featuring AI chat integration and innovative control methods
+**Student**: WUYuying003  
+**Course**: Interactive Programming  
+**Institution**: The Hong Kong Polytechnic University  
 
-## 🎯 Games Collection
+## 🎮 Main Assignment: Voice-Controlled Flying Bird Game
+
+### 📁 Assignment Folder: `voice_controlled_bird_assignment/`
+
+**Primary Project**: Advanced voice-controlled flying bird game demonstrating real-time audio processing and human-computer interaction.
+
+#### 🎯 Key Academic Features:
+- **Real-time Audio Processing**: FFT-based pitch detection
+- **Game Development**: Professional Pygame implementation  
+- **Multithreading**: Separate audio capture thread
+- **Signal Processing**: Voice frequency analysis (80-1000Hz)
+- **UI/UX Design**: Intuitive voice control interface
+
+#### � Quick Demo:
+```bash
+cd voice_controlled_bird_assignment/
+pip install -r requirements.txt
+python voice_bird_game.py
+```
+
+**🎬 Demo GIF**: See assignment folder for game demonstration video
+
+---
+
+## 🎯 Additional Projects Collection
 
 ### 🤖 AI Chatbot + Tetris Game
-Classic Tetris game enhanced with AI chat assistant for game analysis and interaction
+Secondary project showcasing AI integration with classic gaming
 
-### 🐦 Voice-Controlled Flying Bird Game  
-Innovative voice-controlled flying game using real-time audio processing and pitch detection
-
-### 🎪 Future Games
-More interactive projects coming soon to expand our mini games club!
+### 🚀 Future Development
+Exploring gesture control, multiplayer features, and VR/AR integration
 
 ## 🚀 Quick Start
 
