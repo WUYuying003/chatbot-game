@@ -1,0 +1,839 @@
+<title>Voice Bird</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --sky-1: #87CEEB;
+    --sky-2: #B7E3F4;
+    --sky-deep: #0E1A2B;
+    --cloud: #FFFFFF;
+    --pipe: #228B22;
+    --pipe-dark: #14591D;
+    --bird: #FFDA2E;
+    --beak: #FF8A00;
+    --ink: #0E1A2B;
+    --ink-soft: rgba(14, 26, 43, 0.72);
+    --paper: #F7F5EF;
+    --paper-soft: rgba(247, 245, 239, 0.78);
+    --danger: #E63946;
+    --accent: #FFDA2E;
+    --hud-bg: rgba(14, 26, 43, 0.55);
+    --hud-fg: #F7F5EF;
+    --btn-bg: #FFDA2E;
+    --btn-fg: #0E1A2B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky-deep: #05101E;
+      --paper: #F7F5EF;
+      --ink: #F7F5EF;
+      --hud-bg: rgba(5, 16, 30, 0.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky-deep: #05101E;
+    --paper: #F7F5EF;
+    --ink: #F7F5EF;
+    --hud-bg: rgba(5, 16, 30, 0.65);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--sky-deep);
+    color: var(--paper);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .frame {
+    position: relative;
+    width: min(100%, calc((100vh - 32px) * 2));
+    max-width: 1200px;
+    aspect-ratio: 2 / 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    background:
+      linear-gradient(180deg, #7EC8E3 0%, #B7E3F4 55%, #D9EEF6 100%);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: auto;
+  }
+
+  /* HUD */
+  .hud {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    pointer-events: none;
+    font-family: "Inter", sans-serif;
+  }
+  .hud-card {
+    background: var(--hud-bg);
+    color: var(--hud-fg);
+    border-radius: 14px;
+    padding: 10px 14px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.35);
+    line-height: 1.15;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+  .hud-score {
+    font-family: "Fredoka", "Inter", sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .hud-score .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.7;
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+  }
+  .hud-score .num {
+    font-family: "JetBrains Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 32px;
+    color: var(--accent);
+  }
+
+  .meters {
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .meter {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.95;
+  }
+  .meter .name { opacity: 0.65; }
+  .meter .val {
+    font-family: "JetBrains Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.95;
+    font-size: 12px;
+  }
+  .bar {
+    position: relative;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+  }
+  .bar > .fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    background: linear-gradient(90deg, #7CD98A, #FFDA2E, #FF8A00);
+    border-radius: 999px;
+    transition: width 60ms linear;
+  }
+  .bar.pitch > .marker {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: 0 0 0 2px var(--danger), 0 0 8px rgba(230, 57, 70, 0.6);
+    transition: left 60ms linear;
+  }
+  .bar.pitch > .fill { display: none; }
+
+  .tips {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    pointer-events: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 60%;
+  }
+  .tag {
+    background: var(--hud-bg);
+    color: var(--hud-fg);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .tag kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.18);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    margin: 0 2px;
+  }
+
+  /* Overlays (start, pause, gameover) */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background: radial-gradient(ellipse at center, rgba(14, 26, 43, 0.55) 0%, rgba(14, 26, 43, 0.85) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 5;
+  }
+  .overlay[hidden] { display: none !important; }
+  .panel {
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    color: var(--paper);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .title {
+    font-family: "Fredoka", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .title .accent { color: var(--accent); }
+  .subtitle {
+    max-width: 44ch;
+    color: rgba(247, 245, 239, 0.82);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin: 4px 0 2px;
+  }
+  .rule {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: left;
+  }
+  .rule .k {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .rule .v {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    margin-top: 3px;
+  }
+  .rule .h {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  .cta {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    font-family: "Fredoka", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px -8px rgba(255, 218, 46, 0.55);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 14px 28px -10px rgba(255, 218, 46, 0.7); }
+  .cta:active { transform: translateY(0); }
+  .cta:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+  .cta .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--danger);
+    box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.25);
+    animation: pulse 1.4s infinite ease-in-out;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.25); }
+    50% { box-shadow: 0 0 0 8px rgba(230, 57, 70, 0.08); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cta .dot { animation: none; }
+  }
+
+  .fine {
+    font-size: 11px;
+    opacity: 0.6;
+    letter-spacing: 0.04em;
+  }
+
+  .credit {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    pointer-events: auto;
+    font-size: 11px;
+    color: var(--hud-fg);
+    background: var(--hud-bg);
+    padding: 6px 10px;
+    border-radius: 999px;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+  }
+  .credit:hover { text-decoration: underline; }
+
+  .go-title {
+    color: var(--danger);
+  }
+  .final {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+  .final b {
+    font-family: "Fredoka", sans-serif;
+    color: var(--accent);
+    font-size: 26px;
+    margin-left: 6px;
+  }
+  .err {
+    color: #FFB4B4;
+    font-size: 13px;
+    max-width: 44ch;
+    line-height: 1.5;
+    display: none;
+  }
+  .err.show { display: block; }
+
+  @media (max-width: 640px) {
+    .hud { top: 10px; left: 10px; right: 10px; }
+    .meters { min-width: 160px; }
+    .rules { grid-template-columns: 1fr; }
+    .tips { max-width: 100%; }
+    .credit { display: none; }
+    .hud-score .num { font-size: 24px; }
+  }
+</style>
+
+<div class="stage">
+  <div class="frame" id="frame">
+    <canvas id="game" width="1200" height="600" aria-label="Voice-controlled bird game"></canvas>
+
+    <div class="hud" id="hud" hidden>
+      <div class="hud-card hud-score">
+        <span class="label">Score</span>
+        <span class="num" id="score">0</span>
+      </div>
+      <div class="hud-card meters">
+        <div class="meter">
+          <span class="name">Volume</span>
+          <div class="bar"><span class="fill" id="vol-fill"></span></div>
+          <span class="val" id="vol-val">0</span>
+        </div>
+        <div class="meter">
+          <span class="name">Pitch</span>
+          <div class="bar pitch"><span class="fill"></span><span class="marker" id="pitch-marker"></span></div>
+          <span class="val" id="pitch-val">— Hz</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips" id="tips" hidden>
+      <span class="tag">🎤 High pitch → fly up</span>
+      <span class="tag">Low pitch → fly down</span>
+      <span class="tag"><kbd>Space</kbd> pause</span>
+    </div>
+
+    <a class="credit" href="https://github.com/WUYuying003/Interactive-Projects" target="_blank" rel="noopener">
+      github.com/WUYuying003 ↗
+    </a>
+
+    <!-- START overlay -->
+    <div class="overlay" id="start-overlay">
+      <div class="panel">
+        <div class="eyebrow">Voice-controlled arcade · web build</div>
+        <h1 class="title">Sing the bird through the <span class="accent">pipes</span>.</h1>
+        <p class="subtitle">
+          A browser port of the pygame original. Your microphone drives the bird —
+          the higher your pitch, the higher it flies. Speak, hum, whistle. Just make noise.
+        </p>
+        <div class="rules">
+          <div class="rule">
+            <div class="k">Loud + high</div>
+            <div class="v">🐦 climbs</div>
+            <div class="h">above 400 Hz</div>
+          </div>
+          <div class="rule">
+            <div class="k">Loud + low</div>
+            <div class="v">🐦 dives</div>
+            <div class="h">near 80–200 Hz</div>
+          </div>
+          <div class="rule">
+            <div class="k">Silence</div>
+            <div class="v">🐦 glides</div>
+            <div class="h">stays where it is</div>
+          </div>
+        </div>
+        <button class="cta" id="start-btn" type="button">
+          <span class="dot"></span>
+          Grant mic &amp; play
+        </button>
+        <p class="fine">Audio never leaves your browser — analysis runs locally with Web Audio API.</p>
+        <p class="err" id="err"></p>
+      </div>
+    </div>
+
+    <!-- PAUSE overlay -->
+    <div class="overlay" id="pause-overlay" hidden>
+      <div class="panel">
+        <div class="eyebrow">Paused</div>
+        <h1 class="title">Take a breath.</h1>
+        <p class="subtitle">Press <kbd style="padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.15);font-family:'JetBrains Mono',monospace;font-size:12px">Space</kbd> or tap below to keep playing.</p>
+        <button class="cta" id="resume-btn" type="button">Resume</button>
+      </div>
+    </div>
+
+    <!-- GAME OVER overlay -->
+    <div class="overlay" id="over-overlay" hidden>
+      <div class="panel">
+        <div class="eyebrow">Round complete</div>
+        <h1 class="title go-title">Game over</h1>
+        <p class="final">You cleared <b id="final-score">0</b> pipes.</p>
+        <button class="cta" id="restart-btn" type="button">Play again</button>
+        <p class="fine">Tip: sustained vowels (“ahhh” / “ooo”) give the cleanest pitch reading.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- Config (ported 1:1 from voice_bird_game.py) ----------
+  const W = 1200, H = 600;
+  const BIRD_X = 150;
+  const BIRD_SIZE = 20;
+  const GAP_SIZE = 380;
+  const PIPE_WIDTH = 60;
+  const PIPE_SPEED = 2.8;
+  const PIPE_INTERVAL_MS = 2700;
+  const PITCH_MIN = 80, PITCH_MAX = 800;   // mapped to screen
+  const VOICE_MIN = 80, VOICE_MAX = 1000;  // detection band
+  const SMOOTH = 0.4;
+
+  // In the pygame version, volume is RMS of int16 samples (~0..32767).
+  // Threshold there = 80. In Web Audio we get Float32 (-1..1), so
+  // equivalent = 80/32768 ≈ 0.00244. We bump it slightly for browser mic noise.
+  const VOL_TRIGGER = 0.006;   // move the bird above this
+  const VOL_ANALYZE = 0.008;   // do FFT pitch analysis above this
+  const VOL_DISPLAY_MAX = 0.15; // top of the volume bar
+
+  // ---------- DOM ----------
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const volFill = document.getElementById('vol-fill');
+  const volVal = document.getElementById('vol-val');
+  const pitchMarker = document.getElementById('pitch-marker');
+  const pitchVal = document.getElementById('pitch-val');
+  const hudEl = document.getElementById('hud');
+  const tipsEl = document.getElementById('tips');
+  const startOv = document.getElementById('start-overlay');
+  const pauseOv = document.getElementById('pause-overlay');
+  const overOv = document.getElementById('over-overlay');
+  const startBtn = document.getElementById('start-btn');
+  const resumeBtn = document.getElementById('resume-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const finalScoreEl = document.getElementById('final-score');
+  const errEl = document.getElementById('err');
+
+  // ---------- Game state ----------
+  const state = {
+    bird: null,
+    obstacles: [],
+    score: 0,
+    obstacleTimer: 0,
+    lastFrame: 0,
+    running: false,
+    paused: false,
+    over: false,
+    pitch: 0,
+    volume: 0,
+  };
+
+  function newBird() {
+    return { x: BIRD_X, y: H / 2, targetY: H / 2, size: BIRD_SIZE };
+  }
+  function newObstacle(x) {
+    return {
+      x,
+      gapY: 200 + Math.random() * (H - 400),
+      gapSize: GAP_SIZE,
+      width: PIPE_WIDTH,
+      speed: PIPE_SPEED,
+      passed: false,
+    };
+  }
+  function reset() {
+    state.bird = newBird();
+    state.obstacles = [];
+    state.score = 0;
+    state.obstacleTimer = 0;
+    state.over = false;
+    state.paused = false;
+    scoreEl.textContent = '0';
+  }
+
+  // ---------- Audio ----------
+  let audioCtx = null, analyser = null, timeBuf = null, freqBuf = null, sampleRate = 44100;
+
+  async function initAudio() {
+    if (audioCtx) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("This browser doesn't support microphone access.");
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AC();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    sampleRate = audioCtx.sampleRate;
+
+    const src = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.15;
+    src.connect(analyser);
+
+    timeBuf = new Float32Array(analyser.fftSize);
+    freqBuf = new Float32Array(analyser.frequencyBinCount);
+  }
+
+  function analyzeAudio() {
+    if (!analyser) return;
+    analyser.getFloatTimeDomainData(timeBuf);
+
+    // RMS volume on time-domain
+    let sum = 0;
+    for (let i = 0; i < timeBuf.length; i++) sum += timeBuf[i] * timeBuf[i];
+    const volume = Math.sqrt(sum / timeBuf.length);
+    state.volume = volume;
+
+    let pitch = 0;
+    if (volume > VOL_ANALYZE) {
+      // FFT magnitudes (dB). Find the loudest bin in 80–1000 Hz.
+      analyser.getFloatFrequencyData(freqBuf);
+      const nyquist = sampleRate / 2;
+      const binHz = nyquist / freqBuf.length;
+      const lo = Math.max(1, Math.floor(VOICE_MIN / binHz));
+      const hi = Math.min(freqBuf.length - 1, Math.ceil(VOICE_MAX / binHz));
+      let bestIdx = -1, bestVal = -Infinity;
+      for (let i = lo; i <= hi; i++) {
+        if (freqBuf[i] > bestVal) { bestVal = freqBuf[i]; bestIdx = i; }
+      }
+      if (bestIdx > 0 && bestVal > -80) {
+        // Parabolic interpolation around the peak for a sharper reading
+        const yL = freqBuf[bestIdx - 1] || bestVal;
+        const yR = freqBuf[bestIdx + 1] || bestVal;
+        const denom = (yL - 2 * bestVal + yR);
+        const shift = denom !== 0 ? 0.5 * (yL - yR) / denom : 0;
+        pitch = (bestIdx + shift) * binHz;
+      }
+    }
+    state.pitch = pitch;
+  }
+
+  // ---------- Game logic ----------
+  function updateBird(bird, pitch, volume) {
+    if (volume > VOL_TRIGGER) {
+      if (pitch > 0) {
+        const n = Math.max(0, Math.min(1, (pitch - PITCH_MIN) / (PITCH_MAX - PITCH_MIN)));
+        // Original: higher pitch = higher on screen (smaller y)
+        bird.targetY = H - 100 - n * (H - 200);
+      }
+      bird.y += (bird.targetY - bird.y) * SMOOTH;
+    }
+    bird.y = Math.max(bird.size, Math.min(H - bird.size, bird.y));
+  }
+
+  function collides(bird, o) {
+    if (bird.x + bird.size > o.x && bird.x - bird.size < o.x + o.width) {
+      if (bird.y - bird.size < o.gapY - o.gapSize / 2 || bird.y + bird.size > o.gapY + o.gapSize / 2) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ---------- Drawing ----------
+  const clouds = Array.from({length: 5}, (_, i) => ({ offset: i * 300, y: 50 + i * 30 }));
+
+  function drawClouds(t) {
+    ctx.fillStyle = '#FFFFFF';
+    for (const c of clouds) {
+      const x = ((c.offset + t * 0.02) % (W + 100)) - 50;
+      ctx.beginPath();
+      ctx.arc(x, c.y, 25, 0, Math.PI * 2);
+      ctx.arc(x + 20, c.y, 30, 0, Math.PI * 2);
+      ctx.arc(x + 40, c.y, 25, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawPipe(o) {
+    const topH = o.gapY - o.gapSize / 2;
+    const botY = o.gapY + o.gapSize / 2;
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(o.x, 0, o.width, topH);
+    ctx.fillRect(o.x, botY, o.width, H - botY);
+    // dark rims (like pygame edges)
+    ctx.fillStyle = '#14591D';
+    ctx.fillRect(o.x - 4, topH - 20, o.width + 8, 20);
+    ctx.fillRect(o.x - 4, botY, o.width + 8, 20);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(o.x, 0, o.width, topH);
+    ctx.strokeRect(o.x, botY, o.width, H - botY);
+  }
+
+  function drawBird(b, t) {
+    const bob = Math.sin(t * 0.01) * 1.5;
+    const y = b.y + bob;
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.ellipse(b.x, H - 30, b.size, 5, 0, 0, Math.PI * 2); ctx.fill();
+    // body
+    ctx.fillStyle = '#FFDA2E';
+    ctx.beginPath(); ctx.arc(b.x, y, b.size, 0, Math.PI * 2); ctx.fill();
+    // wing
+    ctx.fillStyle = '#F2B705';
+    const wingFlap = Math.sin(t * 0.02) * 4;
+    ctx.beginPath();
+    ctx.ellipse(b.x - 4, y + 3 + wingFlap * 0.2, 10, 6, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    // beak
+    ctx.fillStyle = '#FF8A00';
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.size, y);
+    ctx.lineTo(b.x + b.size + 15, y - 5);
+    ctx.lineTo(b.x + b.size + 15, y + 5);
+    ctx.closePath(); ctx.fill();
+    // eye white
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.arc(b.x + 8, y - 5, 5, 0, Math.PI * 2); ctx.fill();
+    // pupil
+    ctx.fillStyle = '#0E1A2B';
+    ctx.beginPath(); ctx.arc(b.x + 9, y - 5, 2.5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function drawSky(t) {
+    // gradient sky
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#7EC8E3');
+    g.addColorStop(0.55, '#B7E3F4');
+    g.addColorStop(1, '#D9EEF6');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // ground strip
+    ctx.fillStyle = '#8ED08B';
+    ctx.fillRect(0, H - 8, W, 8);
+    ctx.fillStyle = '#5FA766';
+    ctx.fillRect(0, H - 3, W, 3);
+    drawClouds(t);
+  }
+
+  function render(t) {
+    drawSky(t);
+    for (const o of state.obstacles) drawPipe(o);
+    drawBird(state.bird, t);
+  }
+
+  function updateHud() {
+    volFill.style.width = Math.min(100, (state.volume / VOL_DISPLAY_MAX) * 100).toFixed(1) + '%';
+    volVal.textContent = (state.volume * 1000).toFixed(0);
+    if (state.pitch > 0) {
+      const n = Math.max(0, Math.min(1, (state.pitch - PITCH_MIN) / (PITCH_MAX - PITCH_MIN)));
+      pitchMarker.style.left = (n * 100).toFixed(1) + '%';
+      pitchVal.textContent = state.pitch.toFixed(0) + ' Hz';
+    } else {
+      pitchVal.textContent = '— Hz';
+    }
+  }
+
+  // ---------- Loop ----------
+  function loop(t) {
+    if (!state.running) return;
+    if (!state.lastFrame) state.lastFrame = t;
+    const dt = Math.min(64, t - state.lastFrame); // cap dt to avoid huge jumps
+    state.lastFrame = t;
+
+    analyzeAudio();
+    updateHud();
+
+    if (!state.paused && !state.over) {
+      updateBird(state.bird, state.pitch, state.volume);
+      state.obstacleTimer += dt;
+      if (state.obstacleTimer > PIPE_INTERVAL_MS) {
+        state.obstacles.push(newObstacle(W));
+        state.obstacleTimer = 0;
+      }
+      for (let i = state.obstacles.length - 1; i >= 0; i--) {
+        const o = state.obstacles[i];
+        o.x -= o.speed;
+        if (collides(state.bird, o)) {
+          gameOver();
+        }
+        if (!o.passed && o.x + o.width < state.bird.x) {
+          o.passed = true;
+          state.score += 1;
+          scoreEl.textContent = String(state.score);
+        }
+        if (o.x + o.width < 0) state.obstacles.splice(i, 1);
+      }
+    }
+
+    render(t);
+    requestAnimationFrame(loop);
+  }
+
+  function gameOver() {
+    if (state.over) return;
+    state.over = true;
+    finalScoreEl.textContent = String(state.score);
+    overOv.hidden = false;
+  }
+
+  function pause() {
+    if (state.over) return;
+    state.paused = true;
+    pauseOv.hidden = false;
+  }
+  function resume() {
+    state.paused = false;
+    pauseOv.hidden = true;
+  }
+  function togglePause() { state.paused ? resume() : pause(); }
+
+  async function startGame() {
+    errEl.classList.remove('show');
+    startBtn.disabled = true;
+    startBtn.textContent = 'Listening…';
+    try {
+      await initAudio();
+    } catch (e) {
+      startBtn.disabled = false;
+      startBtn.innerHTML = '<span class="dot"></span> Grant mic &amp; play';
+      errEl.textContent = 'Could not access the microphone: ' + (e && e.message ? e.message : e) +
+        '. Check that this page has mic permission and reload.';
+      errEl.classList.add('show');
+      return;
+    }
+    reset();
+    state.running = true;
+    startOv.hidden = true;
+    hudEl.hidden = false;
+    tipsEl.hidden = false;
+    state.lastFrame = 0;
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Wire up ----------
+  startBtn.addEventListener('click', startGame);
+  resumeBtn.addEventListener('click', resume);
+  restartBtn.addEventListener('click', () => {
+    reset();
+    overOv.hidden = true;
+    scoreEl.textContent = '0';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!state.running) { startGame(); return; }
+      if (state.over) {
+        reset();
+        overOv.hidden = true;
+      } else {
+        togglePause();
+      }
+    } else if (e.code === 'Escape') {
+      if (!state.over && state.running) pause();
+    }
+  });
+
+  // Also let a canvas tap toggle pause on mobile
+  canvas.addEventListener('pointerdown', () => {
+    if (state.running && !state.over) togglePause();
+  });
+
+  // Show a still frame before start so the thumbnail is legible.
+  (function initialFrame() {
+    state.bird = newBird();
+    // seed a couple of pipes for the poster look
+    state.obstacles = [ newObstacle(700), newObstacle(1000) ];
+    render(0);
+  })();
+})();
+</script>
